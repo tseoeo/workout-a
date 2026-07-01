@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14">
+<title>Workout A</title>
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg2:#10161f;
+    --card:#161d28;
+    --line:#26303d;
+    --text:#f3f6fa;
+    --muted:#9fb0c0;
+    --accent:#36d399;       /* posterior-chain green */
+    --accent-soft:#36d39922;
+    --cue:#f6c453;          /* amber highlight */
+    --cue-soft:#f6c4531a;
+    --yt:#ff3b30;
+    --safe-t:env(safe-area-inset-top,0px);
+    --safe-b:env(safe-area-inset-bottom,0px);
+    --bar-h:48px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+
+  /* ---------- persistent top bar (always-visible slide number/title) ---------- */
+  #topbar{position:fixed;top:0;left:0;right:0;height:calc(var(--bar-h) + var(--safe-t));
+    padding-top:var(--safe-t);z-index:40;display:flex;align-items:center;gap:10px;
+    padding-left:16px;padding-right:16px;
+    background:linear-gradient(180deg,rgba(10,14,20,.96),rgba(10,14,20,.78) 70%,rgba(10,14,20,0));
+    backdrop-filter:blur(6px)}
+  #topbar .brand{font-weight:800;letter-spacing:.14em;font-size:12px;color:var(--accent);text-transform:uppercase}
+  #topbar .title{flex:1;text-align:center;font-weight:600;font-size:14px;color:var(--text);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #topbar .count{font-variant-numeric:tabular-nums;font-weight:700;font-size:13px;color:var(--muted)}
+
+  /* ---------- horizontal swipe track ---------- */
+  #track{display:flex;height:100dvh;width:100vw;max-width:100vw;overflow-x:auto;overflow-y:hidden;
+    scroll-snap-type:x mandatory;scroll-behavior:smooth;
+    -ms-overflow-style:none;scrollbar-width:none}
+  #track::-webkit-scrollbar{display:none}
+
+  .slide{flex:0 0 100vw;width:100vw;min-width:0;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;
+    overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  .slide::-webkit-scrollbar{display:none}
+  .inner{min-height:100dvh;width:100%;max-width:540px;margin:0 auto;
+    display:flex;flex-direction:column;gap:12px;
+    padding:calc(var(--bar-h) + var(--safe-t) + 12px) 18px calc(82px + var(--safe-b)) 18px}
+  .inner > *{min-width:0;max-width:100%}
+
+  /* ---------- intro / finish slides ---------- */
+  .center{justify-content:center;text-align:center;gap:18px}
+  .big-title{font-size:clamp(40px,12vw,68px);font-weight:850;line-height:1.02;margin:0;
+    letter-spacing:-.02em;overflow-wrap:break-word}
+  .subtitle{font-size:clamp(16px,4.6vw,20px);color:var(--text);font-weight:600;margin:0;
+    overflow-wrap:break-word}
+  .swipe{font-size:15px;color:var(--accent);font-weight:700;letter-spacing:.04em;
+    animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+  .note{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:12px;padding:14px 16px;font-size:14.5px;line-height:1.5;color:var(--muted);
+    text-align:left;overflow-wrap:break-word}
+  .note b{color:var(--text)}
+  .addons{display:flex;flex-direction:column;gap:12px;text-align:left;width:100%}
+
+  /* ---------- exercise header ---------- */
+  .ex-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .ex-num{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+    width:34px;height:34px;border-radius:10px;background:var(--accent);color:#04130c;
+    font-weight:850;font-size:18px}
+  .ex-head h1{margin:0;font-size:clamp(22px,6.4vw,30px);font-weight:800;line-height:1.05;letter-spacing:-.01em}
+  .ex-head .ex-sub{color:var(--muted);font-size:14px;font-weight:600}
+
+  /* ---------- demo images (white card so line-art + photos read on dark) ---------- */
+  .demo{display:flex;gap:8px;background:#fff;border-radius:14px;padding:8px;
+    border:1px solid var(--line)}
+  .demo figure{flex:1 1 0;margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+  .demo img{width:100%;height:26vh;max-height:240px;object-fit:contain;display:block}
+  .demo figcaption{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:#5b6b7a}
+
+  /* ---------- muscle pills ---------- */
+  .muscles{display:flex;flex-wrap:wrap;gap:7px}
+  .pill{background:var(--accent-soft);color:var(--accent);border:1px solid #36d39944;
+    border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700}
+
+  /* ---------- how to / cues ---------- */
+  h2.sec{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    margin:2px 0 0;font-weight:800}
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:7px}
+  ol.steps li{counter-increment:s;position:relative;padding-left:30px;font-size:14.5px;line-height:1.42;color:var(--text)}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;
+    width:21px;height:21px;border-radius:6px;background:var(--bg2);border:1px solid var(--line);
+    color:var(--accent);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .cues{background:var(--cue-soft);border:1px solid #f6c45340;border-left:3px solid var(--cue);
+    border-radius:12px;padding:12px 14px}
+  .cues h2.sec{color:var(--cue)}
+  .cues ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+  .cues li{font-size:14px;line-height:1.42;color:var(--text)}
+
+  /* ---------- how much ---------- */
+  .howmuch{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .stat{flex:1 1 30%;min-width:96px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:10px 12px}
+  .stat .k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .v{font-size:15px;font-weight:800;margin-top:3px;line-height:1.2}
+
+  /* ---------- watch button ---------- */
+  .watch{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;
+    text-decoration:none;background:var(--yt);color:#fff;font-weight:800;font-size:17px;
+    padding:16px;border-radius:14px;box-shadow:0 6px 20px rgba(255,59,48,.28)}
+  .watch:active{transform:translateY(1px)}
+  .watch .play{font-size:15px}
+
+  /* ---------- bottom nav bar (arrows + dots, never overlaps content) ---------- */
+  #navbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:12px;
+    padding:12px 16px calc(12px + var(--safe-b));
+    background:linear-gradient(0deg,rgba(10,14,20,.97) 55%,rgba(10,14,20,0))}
+  .arrow{flex:0 0 auto;width:64px;height:46px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-radius:13px;background:rgba(22,29,40,.85);
+    color:var(--text);font-size:26px;font-weight:700;cursor:pointer;padding:0;line-height:1}
+  .arrow:active{background:rgba(54,211,153,.3)}
+  .arrow[disabled]{opacity:.3;pointer-events:none}
+  #dots{flex:1;display:flex;justify-content:center;align-items:center;gap:8px}
+  #dots button{width:8px;height:8px;border-radius:50%;border:none;padding:0;
+    background:#3a4756;cursor:pointer;transition:width .2s,background .2s}
+  #dots button.active{width:22px;border-radius:5px;background:var(--accent)}
+
+  @media (min-width:560px){.demo img{height:30vh}}
+</style>
+</head>
+<body>
+  <header id="topbar">
+    <span class="brand">Workout&nbsp;A</span>
+    <span class="title" id="bar-title">Intro</span>
+    <span class="count" id="bar-count">1&thinsp;/&thinsp;8</span>
+  </header>
+
+  <main id="track" aria-label="Workout A slideshow"></main>
+
+  <nav id="navbar" aria-label="Slide navigation">
+    <button class="arrow prev" id="prev" aria-label="Previous slide">&#8249;</button>
+    <div id="dots"></div>
+    <button class="arrow next" id="next" aria-label="Next slide">&#8250;</button>
+  </nav>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- content model ----------
+  var EXERCISES = [
+    {
+      name:"Leg Press", sub:"45° sled",
+      imgs:[["images/legpress-bottom.png","Bottom"],["images/legpress-top.png","Top"]],
+      muscles:["quads","glutes","adductors","hamstrings"],
+      steps:[
+        "Sit with your back and hips flat against the pad, feet shoulder-width on the platform (mid-foot placement).",
+        "Release the safety catches and hold the handles.",
+        "Lower the platform by bending your knees toward about 90° — as deep as you can WITHOUT your lower back or tailbone rounding off the pad.",
+        "Press back up through your whole foot; don't slam your knees into a hard lockout at the top."
+      ],
+      cues:[
+        "Keep your lower back glued to the pad the whole time. If your hips curl up at the bottom, you've gone too deep — shorten the range.",
+        "Drive through your heels and mid-foot, not your toes.",
+        "This replaced the trap-bar deadlift: same quad/glute work, zero setup, and no load on your spine.",
+        "Start moderate and adjust so 8–12 reps is challenging but clean — the number on the stack doesn't matter, the effort does."
+      ],
+      how:{sets:"3 × 8–12",setsk:"reps",rest:"~2 min",weight:"Moderate & clean"},
+      yt:"https://www.youtube.com/watch?v=sEM_zo9w2ss"
+    },
+    {
+      name:"Back Extension", sub:"45° / Roman chair · optional",
+      imgs:[["images/backext-bottom.png","Bent"],["images/backext-top.png","Straight"]],
+      muscles:["lower back","glutes","hamstrings"],
+      steps:[
+        "Set the 45° or Roman-chair bench so the top pad sits just below your hip bones; anchor your feet.",
+        "Cross your arms on your chest (or hug a weight plate there to add load). Start with your torso bent forward.",
+        "Raise your torso until your body is a straight line from head to heels.",
+        "Lower under control."
+      ],
+      cues:[
+        "Stop at a straight line — never crank into a big backbend at the top.",
+        "Squeeze your glutes to lift, don't only use your lower back.",
+        "It's optional insurance for the lower back that the leg press skips — and it strengthens it WITHOUT the spinal compression of a deadlift.",
+        "Bodyweight first; add a plate once 15 reps is easy."
+      ],
+      how:{sets:"3 × 10–15",setsk:"reps",rest:"~90 sec",weight:"Bodyweight first"},
+      yt:"https://www.youtube.com/watch?v=qtjJUWCnDyE"
+    },
+    {
+      name:"Bench Press", sub:"flat barbell",
+      imgs:[["images/bench-bottom.png","Chest"],["images/bench-top.png","Lockout"]],
+      muscles:["chest","front delts","triceps"],
+      steps:[
+        "Lie flat, eyes under the bar, feet planted. Grip a little wider than shoulder-width.",
+        "Unrack and lower the bar to your mid-chest, elbows about 45° from your body (not flared straight out).",
+        "Press back up to over your chest."
+      ],
+      cues:[
+        "Keep your shoulder blades pulled back and down into the bench the whole set.",
+        "Touch your mid-chest, not your neck.",
+        "Start around 40 kg. A dumbbell version gives a deeper chest stretch if you prefer."
+      ],
+      how:{sets:"3 × 6–9",setsk:"reps",rest:"~2 min",weight:"~40 kg to start"},
+      yt:"https://www.youtube.com/watch?v=gRVjAtPip0Y"
+    },
+    {
+      name:"Lat Pulldown", sub:"wide grip",
+      imgs:[["images/latpulldown-stretch.gif","Stretch"],["images/latpulldown-chest.gif","To chest"]],
+      muscles:["lats","biceps","mid-back"],
+      steps:[
+        "Grip the bar a little wider than shoulder-width, palms facing forward, thighs locked under the pad.",
+        "Sit tall and pull the bar to your upper chest, leading with your elbows down and back.",
+        "Squeeze, then return under control and let your shoulders stretch up at the top."
+      ],
+      cues:[
+        "Pull to your upper chest, never behind your neck.",
+        "A slight lean back is fine; heaving with your whole body is not.",
+        "Start around 28 kg."
+      ],
+      how:{sets:"3 × 8–10",setsk:"reps",rest:"~90 sec",weight:"~28 kg to start"},
+      yt:"https://www.youtube.com/watch?v=7JnP8dFbS14"
+    },
+    {
+      name:"Cable Crunch", sub:"kneeling, rope",
+      imgs:[["images/cablecrunch.jpg","Kneeling crunch"]],
+      muscles:["abs (rectus abdominis)"],
+      steps:[
+        "Kneel facing a high cable with a rope attachment; hold the rope beside your temples.",
+        "Crunch down by rounding your spine — bring your ribs toward your pelvis (elbows toward thighs). It's a curl of the spine, not a bend at the hips.",
+        "Return under control, feeling the stretch at the top."
+      ],
+      cues:[
+        "Round your back and curl your pelvis — don't just hinge at the hips or yank with your arms.",
+        "Keep your hips roughly still; it's your torso that crunches.",
+        "It's loadable on purpose — pick a weight where 10–15 reps is genuinely hard. This is how you build the ab muscle."
+      ],
+      how:{sets:"3 × 10–15",setsk:"reps",rest:"~60–90 sec",weight:"Load it — 10–15 hard"},
+      yt:"https://www.youtube.com/watch?v=0KEP6A1deBE"
+    },
+    {
+      name:"Pallof Press", sub:"standing, anti-rotation",
+      imgs:[["images/pallof.jpg","Press out"]],
+      muscles:["deep core","obliques (anti-rotation)"],
+      steps:[
+        "Set a cable (or resistance band) at chest height. Stand side-on to it, feet shoulder-width.",
+        "Hold the handle at your chest with both hands and brace.",
+        "Press your hands straight out in front of you — the cable tries to twist you toward the machine; resist and stay square.",
+        "Return to your chest. Finish the set, then turn around and do the other side."
+      ],
+      cues:[
+        "The whole point is to NOT rotate — stay square and resist the pull.",
+        "Brace your abs like you're about to be poked in the stomach.",
+        "Keep it light; control beats load here. This trains your core to resist the belly pushing forward."
+      ],
+      how:{sets:"3 × 10",setsk:"per side",rest:"~60 sec",weight:"Light — control > load"},
+      yt:"https://www.youtube.com/watch?v=_2xWmYNnFS8"
+    }
+  ];
+
+  var track = document.getElementById('track');
+
+  function el(tag, cls, html){var n=document.createElement(tag); if(cls)n.className=cls; if(html!=null)n.innerHTML=html; return n;}
+
+  // ---- intro slide ----
+  var intro = el('section','slide');
+  intro.dataset.title = "Intro";
+  intro.appendChild((function(){
+    var i = el('div','inner center');
+    i.appendChild(el('h1','big-title','Workout&nbsp;A'));
+    i.appendChild(el('p','subtitle','Legs + push + pull + core &mdash; 2&times;&thinsp;/&thinsp;week'));
+    i.appendChild(el('p','swipe','Swipe &rarr;'));
+    i.appendChild(el('div','note','<b>The rule:</b> keep the weight until you hit the top of every set’s rep range, then add a small jump next time.'));
+    return i;
+  })());
+  track.appendChild(intro);
+
+  // ---- exercise slides ----
+  EXERCISES.forEach(function(ex, idx){
+    var s = el('section','slide');
+    s.dataset.title = (idx+1)+". "+ex.name;
+    var inner = el('div','inner');
+
+    var head = el('div','ex-head');
+    head.appendChild(el('span','ex-num',String(idx+1)));
+    head.appendChild(el('h1',null,ex.name));
+    head.appendChild(el('span','ex-sub',ex.sub));
+    inner.appendChild(head);
+
+    var demo = el('div','demo');
+    ex.imgs.forEach(function(pair){
+      var fig = el('figure');
+      var img = el('img'); img.src=pair[0]; img.alt=ex.name+" – "+pair[1]; img.loading="lazy";
+      fig.appendChild(img);
+      fig.appendChild(el('figcaption',null,pair[1]));
+      demo.appendChild(fig);
+    });
+    inner.appendChild(demo);
+
+    var muscles = el('div','muscles');
+    ex.muscles.forEach(function(m){ muscles.appendChild(el('span','pill',m)); });
+    inner.appendChild(muscles);
+
+    inner.appendChild(el('h2','sec','How to do it'));
+    var ol = el('ol','steps');
+    ex.steps.forEach(function(st){ ol.appendChild(el('li',null,st)); });
+    inner.appendChild(ol);
+
+    var cues = el('div','cues');
+    cues.appendChild(el('h2','sec','Key cues'));
+    var ul = el('ul');
+    ex.cues.forEach(function(c){ ul.appendChild(el('li',null,c)); });
+    cues.appendChild(ul);
+    inner.appendChild(cues);
+
+    var hm = el('div','howmuch');
+    hm.appendChild(el('div','stat','<div class="k">Sets &times; Reps</div><div class="v">'+ex.how.sets+'<br><span style="font-size:12px;color:var(--muted);font-weight:600">'+ex.how.setsk+'</span></div>'));
+    hm.appendChild(el('div','stat','<div class="k">Rest</div><div class="v">'+ex.how.rest+'</div>'));
+    hm.appendChild(el('div','stat','<div class="k">Weight</div><div class="v" style="font-size:13.5px">'+ex.how.weight+'</div>'));
+    inner.appendChild(hm);
+
+    var a = el('a','watch','<span class="play">&#9654;</span> Watch proper form');
+    a.href = ex.yt; a.target = "_blank"; a.rel = "noopener";
+    inner.appendChild(a);
+
+    s.appendChild(inner);
+    track.appendChild(s);
+  });
+
+  // ---- finish slide ----
+  var fin = el('section','slide');
+  fin.dataset.title = "Done";
+  fin.appendChild((function(){
+    var i = el('div','inner center');
+    i.appendChild(el('h1','big-title','Done.'));
+    var box = el('div','addons');
+    box.appendChild(el('div','note','<b>Optional 2-min add-ons</b> if you have time: lateral raises, overhead triceps extension, incline curls.'));
+    box.appendChild(el('div','note','<b>Spacing:</b> keep Workout A and your hardest run on different, non-back-to-back days — heavy legs and hard runs blunt each other for a day or two.'));
+    i.appendChild(box);
+    return i;
+  })());
+  track.appendChild(fin);
+
+  // ---------- navigation ----------
+  var slides = Array.prototype.slice.call(track.querySelectorAll('.slide'));
+  var N = slides.length;
+  var barTitle = document.getElementById('bar-title');
+  var barCount = document.getElementById('bar-count');
+  var prevBtn = document.getElementById('prev');
+  var nextBtn = document.getElementById('next');
+  var dotsWrap = document.getElementById('dots');
+  var current = 0;
+
+  var dots = slides.map(function(_, i){
+    var b = document.createElement('button');
+    b.setAttribute('aria-label','Go to slide '+(i+1));
+    b.addEventListener('click', function(){ goTo(i); });
+    dotsWrap.appendChild(b);
+    return b;
+  });
+
+  function render(){
+    barTitle.textContent = slides[current].dataset.title;
+    barCount.innerHTML = (current+1)+'&thinsp;/&thinsp;'+N;
+    dots.forEach(function(d,i){ d.classList.toggle('active', i===current); });
+    prevBtn.disabled = current===0;
+    nextBtn.disabled = current===N-1;
+  }
+
+  function goTo(i){
+    i = Math.max(0, Math.min(N-1, i));
+    track.scrollTo({left: i*track.clientWidth, behavior:'smooth'});
+    // current updates via scroll handler, but set eagerly for snappy UI
+    current = i; render();
+  }
+
+  // derive current slide from scroll position (handles native swipe)
+  var ticking = false;
+  track.addEventListener('scroll', function(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      if(i !== current){ current = i; render(); }
+      ticking = false;
+    });
+  }, {passive:true});
+
+  prevBtn.addEventListener('click', function(){ goTo(current-1); });
+  nextBtn.addEventListener('click', function(){ goTo(current+1); });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'){ goTo(current+1); }
+    else if(e.key==='ArrowLeft'){ goTo(current-1); }
+  });
+
+  // keep alignment on rotate / resize
+  var rt;
+  window.addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){ track.scrollLeft = current*track.clientWidth; }, 120);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
