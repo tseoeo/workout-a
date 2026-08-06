@@ -403,14 +403,17 @@
     }
 
     // 3. full history list — every logged session, most recent in bold
-    var hist = el('div','pg-hist');
-    hist.appendChild(el('div','hl','History'));
-    p.history.forEach(function(h, i){
-      var now = (i === p.history.length-1);
-      hist.appendChild(el('div','row'+(now?' now':''),
-        '<span class="d">'+h.date+'</span> &middot; '+wdisp(h)+' &times; '+h.reps));
-    });
-    wrap.appendChild(hist);
+    //    (skipped entirely for a brand-new exercise, so no empty box renders)
+    if(p.history.length){
+      var hist = el('div','pg-hist');
+      hist.appendChild(el('div','hl','History'));
+      p.history.forEach(function(h, i){
+        var now = (i === p.history.length-1);
+        hist.appendChild(el('div','row'+(now?' now':''),
+          '<span class="d">'+h.date+'</span> &middot; '+wdisp(h)+' &times; '+h.reps));
+      });
+      wrap.appendChild(hist);
+    }
 
     // 4. highlighted next target + coaching note
     var nx = el('div','pg-next');
