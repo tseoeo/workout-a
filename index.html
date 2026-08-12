@@ -41,7 +41,6 @@
 
     /* — image plate (line-art + photos need a light ground) — */
     --color-sheet:      oklch(100% 0 0);
-    --color-sheet-ink:  oklch(52% 0.020 250);
 
     /* — bar chart ———————————————————————————— */
     --color-bar:        oklch(46% 0.024 250);
@@ -214,13 +213,10 @@
     border:var(--rule) solid var(--color-rule);border-radius:var(--radius-pill);
     padding:var(--space-3xs) var(--space-xs)}
 
-  .demo{display:flex;gap:var(--space-xs);background:var(--color-sheet);
-    border:var(--rule) solid var(--color-rule);border-radius:var(--radius-md);padding:var(--space-xs)}
-  .demo figure{flex:1 1 0;min-width:0;margin:0;
-    display:flex;flex-direction:column;align-items:center;gap:var(--space-2xs)}
-  .demo img{width:100%;height:24vh;max-height:220px;object-fit:contain;display:block}
-  .demo figcaption{font-size:var(--text-2xs);font-weight:700;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--color-sheet-ink)}
+  .demo{background:var(--color-sheet);border:var(--rule) solid var(--color-rule);
+    border-radius:var(--radius-md);padding:var(--space-xs)}
+  .demo img{display:block;width:100%;margin:0 auto;aspect-ratio:4/3;max-height:40vh;
+    object-fit:contain}
 
   h2.sec{margin:0;font-size:var(--text-2xs);font-weight:700;letter-spacing:.14em;
     text-transform:uppercase;color:var(--color-ink-3)}
@@ -279,9 +275,6 @@
     .pg-next .nt{margin-top:var(--space-2xs);padding-top:var(--space-2xs)}
   }
 
-  @media (min-width:560px){
-    .demo img{height:28vh;max-height:260px}
-  }
 
   @media (prefers-reduced-motion:reduce){
     #track{scroll-behavior:auto}
@@ -312,7 +305,7 @@
   var EXERCISES = [
     {
       name:"Leg Press", garmin:"Leg Press", sub:"45° sled",
-      imgs:[["images/legpress-bottom.png","Bottom"],["images/legpress-top.png","Top"]],
+      imgs:"images/legpress.png",
       muscles:["quads","glutes","adductors","hamstrings"],
       steps:[
         "Sit with your back and hips flat against the pad, feet shoulder-width on the platform (mid-foot placement).",
@@ -331,7 +324,7 @@
     },
     {
       name:"Back Extension", garmin:"Weighted GHD Back Extensions", sub:"45° / Roman chair · optional",
-      imgs:[["images/backext-bottom.png","Bent"],["images/backext-top.png","Straight"]],
+      imgs:"images/backext.png",
       muscles:["lower back","glutes","hamstrings"],
       steps:[
         "Set the 45° or Roman-chair bench so the top pad sits just below your hip bones; anchor your feet.",
@@ -350,7 +343,7 @@
     },
     {
       name:"Bench Press", garmin:"Bench Press", sub:"flat barbell",
-      imgs:[["images/bench-bottom.png","Chest"],["images/bench-top.png","Lockout"]],
+      imgs:"images/bench.png",
       muscles:["chest","front delts","triceps"],
       steps:[
         "Lie flat, eyes under the bar, feet planted. Grip a little wider than shoulder-width.",
@@ -367,7 +360,7 @@
     },
     {
       name:"Lat Pulldown", garmin:"Lat Pull-down", sub:"wide grip",
-      imgs:[["images/latpulldown-stretch.gif","Stretch"],["images/latpulldown-chest.gif","To chest"]],
+      imgs:"images/latpulldown.png",
       muscles:["lats","biceps","mid-back"],
       steps:[
         "Grip the bar a little wider than shoulder-width, palms facing forward, thighs locked under the pad.",
@@ -384,7 +377,7 @@
     },
     {
       name:"Cable Crunch", garmin:"Kneeling Cable Crunch", sub:"kneeling, rope",
-      imgs:[["images/cablecrunch.jpg","Kneeling crunch"]],
+      imgs:"images/cablecrunch.png",
       muscles:["abs (rectus abdominis)"],
       steps:[
         "Kneel facing a high cable with a rope attachment; hold the rope beside your temples.",
@@ -401,7 +394,7 @@
     },
     {
       name:"Pallof Press", garmin:"Cable Core Press", sub:"standing, anti-rotation",
-      imgs:[["images/pallof.jpg","Press out"]],
+      imgs:"images/pallof.png",
       muscles:["deep core","obliques (anti-rotation)"],
       steps:[
         "Set a cable (or resistance band) at chest height. Stand side-on to it, feet shoulder-width.",
@@ -592,13 +585,8 @@
     ref.appendChild(muscles);
 
     var demo = el('div','demo');
-    ex.imgs.forEach(function(pair){
-      var fig = el('figure');
-      var img = el('img'); img.src=pair[0]; img.alt=ex.name+" – "+pair[1]; img.loading="lazy";
-      fig.appendChild(img);
-      fig.appendChild(el('figcaption',null,pair[1]));
-      demo.appendChild(fig);
-    });
+    var img = el('img'); img.src=ex.imgs; img.alt=ex.name; img.loading="lazy";
+    demo.appendChild(img);
     ref.appendChild(demo);
 
     ref.appendChild(el('h2','sec','How to do it'));
