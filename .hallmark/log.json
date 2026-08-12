@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-08-12",
+    "scope": "app",
+    "macrostructure": "Stat-Led",
+    "genre": "modern-minimal",
+    "theme": "custom",
+    "theme_axes": "dark / grotesk-sans / chromatic-green",
+    "vibe": "dark technical readout, glanceable mid-set",
+    "enrichment": "none",
+    "brief": "workout-a + workout-b phone slideshows — progress readout above the fold; one system applied to both repos"
+  }
+]
